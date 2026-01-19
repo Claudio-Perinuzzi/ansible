@@ -1,0 +1,47 @@
+---
+
+- hosts: all 
+  become: true
+  tasks:
+
+  - name: install updates (Ubuntu)
+    tags: always
+    ansible.builtin.apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+
+
+- hosts:  web_servers # target specific nodes in inventory.ini 
+  become: true
+  tasks:
+
+  # ROCKY AUTOMATION #########################################################
+
+  - name: install httpd package
+    tags: httpd
+    ansible.builtin.dnf:
+      name: httpd
+    when: ansible_distribution == "Rocky" and ansible_distribution_version == "9.7"
+    register: httpd # register the state as a variable name
+
+  - name: start httpd 
+    tags: httpd
+    service:
+      name: httpd
+      state: started
+    when: httpd.changed # start when we have it installed
+
+ # UBUNTU AUTOMATION #########################################################
+
+  - name: install apache2 and php packages for Ubuntu
+    tags: apache, apache2, ubuntu # I can specify certain tasks to run with tags
+    ansible.builtin.apt: # or you can use package: here as it will understand what package to use for that OS
+      name: 
+        - "{{ apache_package }}" # A variable
+        - "{{ php_package }}"
+    when: ansible_distribution in ["Debian", "Ubuntu"]
+
+
+# ansible-playbook --ask-become-pass install_httpd.yml
+# ansible-playbook --ask-become-pass --tags always install_httpd.yml
