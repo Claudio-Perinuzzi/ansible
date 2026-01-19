@@ -22,6 +22,7 @@
     tags: httpd
     ansible.builtin.dnf:
       name: httpd
+      state: present # check if it is installed already, if it is, do nothing
     when: ansible_distribution == "Rocky" and ansible_distribution_version == "9.7"
     register: httpd # register the state as a variable name
 
@@ -30,7 +31,8 @@
     service:
       name: httpd
       state: started
-    when: httpd.changed # start when we have it installed
+      enabled: yes # starts if the vm rebooty
+    # when: httpd.changed # start when we install it, but what if we skip the task above?
 
  # UBUNTU AUTOMATION #########################################################
 
